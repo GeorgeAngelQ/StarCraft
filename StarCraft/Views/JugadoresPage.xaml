@@ -1,0 +1,57 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StarCraft.Views.JugadoresPage"
+             Title="Jugadores">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+        <SearchBar x:Name="SearchBarJugadores"
+                   Placeholder="Buscar jugador por alias..."
+                   TextChanged="OnSearchTextChanged" />
+
+        <Frame BorderColor="LightGray" Padding="15" CornerRadius="10">
+            <VerticalStackLayout Spacing="8">
+                <Entry x:Name="AliasEntry" Placeholder="Alias" Completed="Campo_Completed"/>
+                <Entry x:Name="PaisEntry" Placeholder="País" Completed="Campo_Completed"/>
+                <Picker x:Name="RazaPicker"
+                        Title="Raza principal">
+                    <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String></x:String>
+                                        <x:String>Terran</x:String>
+                                        <x:String>Zerg</x:String>
+                                        <x:String>Protoss</x:String>
+                                    </x:Array>  
+                    </Picker.ItemsSource>
+                </Picker>
+                <Button Text="Guardar" BackgroundColor="White" TextColor="Black" Clicked="OnGuardarClicked" />
+            </VerticalStackLayout>
+        </Frame>
+
+        <CollectionView x:Name="JugadoresCollection"
+                        SelectionMode="Single"
+                        SelectionChanged="OnJugadorSeleccionado">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BorderColor="#ddd" Padding="10" Margin="0,5" CornerRadius="8">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout>
+                                <Label Text="{Binding Alias}" FontAttributes="Bold" FontSize="16" />
+                                <Label Text="{Binding Pais}" FontSize="13" />
+                                <Label Text="{Binding RazaPrincipal}" FontSize="13" TextColor="Gray" />
+                            </VerticalStackLayout>
+
+                            <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                                <Button Text="✏️" BackgroundColor="Transparent" Clicked="OnEditarClicked" CommandParameter="{Binding}" />
+                                <Button Text="🗑️" BackgroundColor="Transparent" Clicked="OnEliminarClicked" CommandParameter="{Binding}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

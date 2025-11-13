@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="StarCraft.Views.JuegosPage"
+    Title="Juegos">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="12">
+
+            <Label Text="Gestión de Juegos" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center"/>
+
+            <!-- Serie (obligatoria) -->
+            <Label Text="Serie" />
+            <Picker x:Name="SeriePicker"
+                    Title="Selecciona una serie"
+                    SelectedIndexChanged="SeriePicker_SelectedIndexChanged" />
+
+            <!-- Grid: mapa, ganador, razas -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12" RowDefinitions="Auto,Auto">
+                <VerticalStackLayout Grid.Column="0" Spacing="8">
+                    <Label Text="Mapa" />
+                    <Picker x:Name="MapaPicker" Title="Selecciona mapa" IsEnabled="False" />
+
+                    <Label Text="Raza Jugador 1" />
+                    <Picker x:Name="Raza1Picker" IsEnabled="False" />
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="8">
+                    <Label Text="Ganador" />
+                    <Picker x:Name="GanadorPicker" Title="Selecciona ganador" IsEnabled="False"/>
+
+                    <Label Text="Raza Jugador 2" />
+                    <Picker x:Name="Raza2Picker" IsEnabled="False"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Botones -->
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                <Button Text="Guardar" Clicked="GuardarButton_Clicked" BackgroundColor="#007ACC" TextColor="White"/>
+                <Button Text="Nuevo" Clicked="NuevoButton_Clicked" BackgroundColor="#6c757d" TextColor="White"/>
+            </HorizontalStackLayout>
+
+            <!-- Buscador -->
+
+            <!-- Lista de juegos -->
+            <CollectionView x:Name="JuegosCollection" Margin="0,6,0,0" SelectionMode="Single" SelectionChanged="JuegosCollection_SelectionChanged">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="12" Margin="0,0,0,12" BorderColor="#DDD" CornerRadius="10" HasShadow="True">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding SerieText}" FontAttributes="Bold" />
+                                    <Label Text="{Binding MapaNombre, StringFormat='Mapa: {0}'}" />
+                                    <Label Text="{Binding RazaJugador1, StringFormat='Raza 1: {0}'}" />
+                                    <Label Text="{Binding RazaJugador2, StringFormat='Raza 2: {0}'}" />
+                                    <Label Text="{Binding GanadorAlias, StringFormat='Ganador: {0}'}" TextColor="Green" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Start" Spacing="6">
+                                    <Button Text="Editar" Clicked="EditarButton_Clicked" CommandParameter="{Binding IdJuego}" BackgroundColor="Transparent"/>
+                                    <Button Text="Eliminar" Clicked="EliminarButton_Clicked" CommandParameter="{Binding IdJuego}" BackgroundColor="Transparent" TextColor="#C62828"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
+

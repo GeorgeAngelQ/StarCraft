@@ -1,0 +1,34 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             x:Class="StarCraft.Views.SerieFormPage"
+             Title="Registrar Serie">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="Datos de la Serie"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <Entry x:Name="ModalidadEntry"
+                   Placeholder="Modalidad (Ej: Bo3, Bo5)" Completed="Campo_Completed"/>
+
+            <DatePicker x:Name="FechaPicker"
+                        Date="{x:Static sys:DateTime.Now }"/>
+
+            <Picker x:Name="Jugador1Picker"
+                    Title="Seleccionar Jugador 1"/>
+
+            <Picker x:Name="Jugador2Picker"
+                    Title="Seleccionar Jugador 2"/>
+
+            <HorizontalStackLayout Spacing="15" HorizontalOptions="Center">
+                <Button Text="Guardar" Clicked="OnGuardarClicked" BackgroundColor="#007ACC" TextColor="White"/>
+                <Button Text="Eliminar" Clicked="OnEliminarClicked" BackgroundColor="#C62828" TextColor="White"/>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

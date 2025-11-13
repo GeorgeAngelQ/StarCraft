@@ -1,0 +1,53 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StarCraft.Views.SeriesPage"
+             Title="Series">
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="15" Spacing="10">
+                <Label Text="Series registradas"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       Margin="0,10,0,20" />
+
+                <CollectionView x:Name="SeriesCollection"
+                                SelectionMode="Single"
+                                SelectionChanged="OnSerieSeleccionada"
+                                Margin="0,10,0,0">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="15"
+                                   Margin="0,0,0,15"
+                                   BorderColor="#cccccc"
+                                   CornerRadius="10"
+                                   HasShadow="True">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Modalidad}" FontSize="18" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Fecha, StringFormat='{0:dd/MM/yyyy}'}" />
+                                    <Label Text="{Binding Jugador1.Alias, StringFormat='Jugador 1: {0}'}"/>
+                                    <Label Text="{Binding Jugador2.Alias, StringFormat='Jugador 2: {0}'}"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Botón flotante para agregar -->
+        <Button Text="＋"
+                FontSize="30"
+                BackgroundColor="#007ACC"
+                TextColor="White"
+                CornerRadius="30"
+                WidthRequest="60"
+                HeightRequest="60"
+                VerticalOptions="End"
+                HorizontalOptions="End"
+                Margin="20"
+                Clicked="OnAgregarClicked" />
+    </Grid>
+</ContentPage>
+
