@@ -7,6 +7,8 @@ public partial class MainPage : ContentPage
         InitializeComponent();
     }
 
+    private async void OnHomeClicked(object sender, EventArgs e) =>
+        await Navigation.PushAsync(new Views.HomePage());
     private async void OnSeriesClicked(object sender, EventArgs e) =>
         await Navigation.PushAsync(new Views.SeriesPage());
 

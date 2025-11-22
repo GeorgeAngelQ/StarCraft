@@ -9,5 +9,6 @@
         <Button Text="Juegos" Clicked="OnJuegosClicked" />
         <Button Text="Jugadores" Clicked="OnJugadoresClicked" />
         <Button Text="Mapas" Clicked="OnMapasClicked" />
+        <Button Text="Home" Clicked="OnHomeClicked" />
     </VerticalStackLayout>
 </ContentPage>

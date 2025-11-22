@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using LiveChartsCore.SkiaSharpView.Maui;
+using SkiaSharp;
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using LiveChartsCore;
 using StarCraft.Data;
 
 namespace StarCraft
@@ -10,6 +13,8 @@ namespace StarCraft
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp()
+                .UseLiveCharts()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

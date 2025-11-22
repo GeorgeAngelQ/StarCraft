@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace StarCraft.Models
 {
     [Index(nameof(Alias), IsUnique = true)]
-    public class Jugador
+    public partial class Jugador
     {
         [Key]
         public int IdJugador { get; set; }
@@ -13,5 +13,6 @@ namespace StarCraft.Models
         public string? RazaPrincipal { get; set; } 
         public DateTime FechaRegistro { get; set; } = DateTime.Now;
 
+        public override string? ToString() => Alias ?? base.ToString();
     }
 }

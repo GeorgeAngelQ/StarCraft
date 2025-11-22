@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Platform;
 using StarCraft.Data;
@@ -194,7 +194,7 @@ public partial class JuegosPage : ContentPage
         }
 
         await LoadJuegosAsync();
-        NuevoButton_Clicked(null, EventArgs.Empty); 
+        NuevoButton_Clicked(null, EventArgs.Empty);
     }
 
     private void NuevoButton_Clicked(object? sender, EventArgs e)
@@ -244,7 +244,7 @@ public partial class JuegosPage : ContentPage
     {
         if (!(sender is Button btn) || !(btn.CommandParameter is int id)) return;
 
-        var confirm = await DisplayAlert("Confirmar", "¿Eliminar este juego?", "Sí", "No");
+        var confirm = await DisplayAlert("Confirmar", "ï¿½Eliminar este juego?", "Sï¿½", "No");
         if (!confirm) return;
 
         var juego = await _db.Juegos.FindAsync(id);

@@ -1,0 +1,90 @@
+<ContentPage
+    x:Class="StarCraft.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:StarCraft.Models"
+    Title="Búsqueda de Enfrentamientos">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <!-- TITULO -->
+            <Label Text="Buscar Enfrentamientos" 
+                   FontSize="22" 
+                   HorizontalOptions="Center" />
+
+            <!-- Jugador 1 -->
+            <Label Text="Jugador 1" />
+            <Picker x:Name="PickerJugador1"
+                    Title="Seleccione jugador"
+                    ItemDisplayBinding="{Binding Alias}" />
+
+            <!-- Jugador 2 -->
+            <Label Text="Jugador 2" />
+            <Picker x:Name="PickerJugador2"
+                    Title="Seleccione jugador"
+                    ItemDisplayBinding="{Binding Alias}" />
+
+            <!-- Mapa -->
+            <Label Text="Mapa" />
+            <Picker x:Name="PickerMapa"
+                    Title="Seleccione mapa"
+                    ItemDisplayBinding="{Binding Nombre}" />
+
+            <!-- Modalidad (Opcional) -->
+            <Label Text="Modalidad (opcional)" />
+            <Entry x:Name="EntryModalidad"
+                   Placeholder="Ej: Bo7, Bo5, Bo3" />
+
+            <!-- Fechas opcionales -->
+            <HorizontalStackLayout Spacing="10">
+                <VerticalStackLayout>
+                    <Label Text="Desde" />
+                    <DatePicker x:Name="DateDesde" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout>
+                    <Label Text="Hasta" />
+                    <DatePicker x:Name="DateHasta" />
+                </VerticalStackLayout>
+            </HorizontalStackLayout>
+
+            <!-- Botón Buscar -->
+            <Button Text="Buscar"
+                    BackgroundColor="#0066CC"
+                    TextColor="White"
+                    Clicked="OnBuscarClicked" />
+
+            <!-- Resultados -->
+            <Label Text="Resultados"
+                   FontAttributes="Bold"
+                   FontSize="18"
+                   Margin="0,20,0,10" />
+
+            <CollectionView x:Name="ListaResultados">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="#cccccc" Padding="10" Margin="0,5">
+
+                            <VerticalStackLayout>
+
+                                <Label Text="{Binding SerieText}"
+                                       FontAttributes="Bold" />
+
+                                <Label Text="{Binding JuegoText}" />
+
+                                <Label Text="{Binding FechaCreacion, StringFormat='Fecha: {0:yyyy-MM-dd HH:mm}'}"
+                                       FontSize="12"
+                                       TextColor="Gray" />
+
+                            </VerticalStackLayout>
+
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
