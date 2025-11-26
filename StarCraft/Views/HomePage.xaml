@@ -61,7 +61,6 @@
                                    Padding="0"
                                    HasShadow="False">
                                 <Picker x:Name="PickerJugador1"
-                                        Title="Seleccione"
                                         ItemDisplayBinding="{Binding Alias}"
                                         TextColor="#FFFFFF"
                                         TitleColor="#999999"
@@ -92,7 +91,6 @@
                                    Padding="0"
                                    HasShadow="False">
                                 <Picker x:Name="PickerJugador2"
-                                        Title="Seleccione"
                                         ItemDisplayBinding="{Binding Alias}"
                                         TextColor="#FFFFFF"
                                         TitleColor="#999999"
@@ -113,7 +111,6 @@
                                    Padding="0"
                                    HasShadow="False">
                                 <Picker x:Name="PickerMapa"
-                                        Title="Seleccione"
                                         ItemDisplayBinding="{Binding Nombre}"
                                         TextColor="#FFFFFF"
                                         TitleColor="#999999"
