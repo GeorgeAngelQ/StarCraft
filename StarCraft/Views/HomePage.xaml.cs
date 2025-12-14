@@ -10,13 +10,11 @@ namespace StarCraft.Views;
 
 public partial class HomePage : ContentPage
 {
-    private readonly AppDbContext _context;
     private bool _isSearching = false;
 
     public HomePage()
     {
         InitializeComponent();
-        _context = new AppDbContext();
 
         // Configurar el gráfico vacío inicialmente
         ConfigurarGraficoVacio();
@@ -56,8 +54,10 @@ public partial class HomePage : ContentPage
     {
         try
         {
-            var jugadores = await _context.Jugadores.OrderBy(j => j.Alias).ToListAsync();
-            var mapas = await _context.Mapas.OrderBy(m => m.Nombre).ToListAsync();
+            var db = new AppDbContext();
+            var jugadores = await db.Jugadores.OrderBy(j => j.Alias).ToListAsync();
+            var mapas = await db.Mapas.OrderBy(m => m.Nombre).ToListAsync();
+            await db.DisposeAsync();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -128,8 +128,10 @@ public partial class HomePage : ContentPage
         DateTime? fDesde = DateDesde.Date;
         DateTime? fHasta = DateHasta.Date;
 
+        var db = new AppDbContext();
+
         // Construir query
-        var query = _context.Juegos
+        var query = db.Juegos
             .Include(j => j.Serie).ThenInclude(s => s.Jugador1)
             .Include(j => j.Serie).ThenInclude(s => s.Jugador2)
             .Include(j => j.Mapa)
@@ -151,6 +153,8 @@ public partial class HomePage : ContentPage
         var juegos = await query
             .OrderByDescending(j => j.FechaCreacion)
             .ToListAsync();
+
+        await db.DisposeAsync();
 
         // Calcular estadísticas
         int total = juegos.Count;
@@ -259,11 +263,5 @@ public partial class HomePage : ContentPage
         LblResumen.Text = string.Empty;
         ConfigurarGraficoVacio();
         ListaResultados.ItemsSource = null;
-    }
-
-    protected override void OnDisappearing()
-    {
-        base.OnDisappearing();
-        _context?.Dispose();
     }
 }

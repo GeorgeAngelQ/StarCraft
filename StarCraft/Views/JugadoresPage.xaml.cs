@@ -101,7 +101,7 @@ public partial class JugadoresPage : ContentPage
                 button.Text = "💾 Guardando...";
             }
 
-            using var db = new AppDbContext();
+            var db = new AppDbContext();
 
             string alias = AliasEntry.Text?.Trim() ?? string.Empty;
             string pais = PaisEntry.Text?.Trim() ?? string.Empty;
@@ -262,7 +262,7 @@ public partial class JugadoresPage : ContentPage
 
             if (!confirmar) return;
 
-            using var db = new AppDbContext();
+            var db = new AppDbContext();
 
             // Verificar si el jugador tiene series o juegos asociados
             bool tieneRelaciones = await db.Series
@@ -277,11 +277,16 @@ public partial class JugadoresPage : ContentPage
                     "Sí, eliminar todo",
                     "Cancelar");
 
-                if (!confirmarConDatos) return;
+                if (!confirmarConDatos)
+                {
+                    await db.DisposeAsync();
+                    return;
+                }
             }
 
             db.Jugadores.Remove(jugador);
             await db.SaveChangesAsync();
+            await db.DisposeAsync();
 
             await DisplayAlert("✅ Eliminado",
                 $"Jugador '{jugador.Alias}' eliminado correctamente.", "OK");

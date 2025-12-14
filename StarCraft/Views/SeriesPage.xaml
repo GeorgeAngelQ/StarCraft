@@ -1,53 +1,299 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="StarCraft.Views.SeriesPage"
-             Title="Series">
+             Title="Series"
+             BackgroundColor="#0F0F0F">
 
     <Grid>
         <ScrollView>
-            <VerticalStackLayout Padding="15" Spacing="10">
-                <Label Text="Series registradas"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       Margin="0,10,0,20" />
+            <Grid Padding="20" RowSpacing="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                <CollectionView x:Name="SeriesCollection"
-                                SelectionMode="Single"
-                                SelectionChanged="OnSerieSeleccionada"
-                                Margin="0,10,0,0">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Padding="15"
-                                   Margin="0,0,0,15"
-                                   BorderColor="#cccccc"
-                                   CornerRadius="10"
-                                   HasShadow="True">
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Modalidad}" FontSize="18" FontAttributes="Bold"/>
-                                    <Label Text="{Binding Fecha, StringFormat='{0:dd/MM/yyyy}'}" />
-                                    <Label Text="{Binding Jugador1.Alias, StringFormat='Jugador 1: {0}'}"/>
-                                    <Label Text="{Binding Jugador2.Alias, StringFormat='Jugador 2: {0}'}"/>
-                                </VerticalStackLayout>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
+                <!-- ENCABEZADO -->
+                <Frame Grid.Row="0"
+                       BackgroundColor="#1A1A1D"
+                       BorderColor="#2D2D30"
+                       CornerRadius="12"
+                       HasShadow="True"
+                       Padding="20">
+                    <VerticalStackLayout Spacing="15">
+                        <!-- Título -->
+                        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                            <Label Text="🎯" FontSize="28" VerticalOptions="Center" />
+                            <Label Text="Gestión de Series" 
+                                   FontSize="24" 
+                                   FontAttributes="Bold"
+                                   TextColor="#6C63FF"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <!-- Barra de búsqueda -->
+                        <Frame BackgroundColor="#252529"
+                               BorderColor="#3E3E42"
+                               CornerRadius="8"
+                               Padding="0"
+                               HasShadow="False">
+                            <SearchBar x:Name="SearchBarSeries"
+                                       Placeholder="🔍 Buscar por jugador, modalidad o fecha..."
+                                       PlaceholderColor="#808080"
+                                       TextColor="#FFFFFF"
+                                       CancelButtonColor="#6C63FF"
+                                       BackgroundColor="Transparent"
+                                       TextChanged="OnSearchTextChanged" />
+                        </Frame>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- LISTA DE SERIES -->
+                <Frame Grid.Row="1"
+                       BackgroundColor="#1A1A1D"
+                       BorderColor="#2D2D30"
+                       CornerRadius="12"
+                       HasShadow="True"
+                       Padding="20">
+                    <Grid RowSpacing="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Título de la lista -->
+                        <HorizontalStackLayout Grid.Row="0" Spacing="10">
+                            <Label Text="📋" FontSize="20" VerticalOptions="Center"/>
+                            <Label Text="Series Registradas" 
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#6C63FF"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Selector de items por página y contador -->
+                        <Grid Grid.Row="1" ColumnSpacing="15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Items por página -->
+                            <HorizontalStackLayout Grid.Column="0" Spacing="10" VerticalOptions="Center">
+                                <Label Text="Mostrar:" 
+                                       TextColor="#E0E0E0"
+                                       VerticalOptions="Center"/>
+                                <Frame BackgroundColor="#252529"
+                                       BorderColor="#3E3E42"
+                                       CornerRadius="6"
+                                       Padding="0"
+                                       HasShadow="False">
+                                    <Picker x:Name="PickerItemsPorPagina"
+                                            TextColor="#FFFFFF"
+                                            TitleColor="#808080"
+                                            BackgroundColor="Transparent"
+                                            WidthRequest="80"
+                                            SelectedIndex="0"
+                                            SelectedIndexChanged="OnItemsPorPaginaChanged">
+                                        <Picker.ItemsSource>
+                                            <x:Array Type="{x:Type x:String}">
+                                                <x:String>5</x:String>
+                                                <x:String>10</x:String>
+                                                <x:String>15</x:String>
+                                                <x:String>20</x:String>
+                                                <x:String>30</x:String>
+                                                <x:String>50</x:String>
+                                            </x:Array>
+                                        </Picker.ItemsSource>
+                                    </Picker>
+                                </Frame>
+                            </HorizontalStackLayout>
+
+                            <!-- Total de registros -->
+                            <Label Grid.Column="2"
+                                   x:Name="LblTotalRegistros"
+                                   Text="Total: 0 serie(s)"
+                                   TextColor="#B8B8B8"
+                                   FontSize="14"
+                                   HorizontalOptions="End"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- CollectionView -->
+                        <CollectionView Grid.Row="2"
+                                       x:Name="SeriesCollection"
+                                       SelectionMode="Single"
+                                       SelectionChanged="OnSerieSeleccionada">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame BackgroundColor="#252529"
+                                           BorderColor="#3E3E42"
+                                           CornerRadius="10"
+                                           Padding="15"
+                                           Margin="0,8"
+                                           HasShadow="False">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="15">
+                                            <!-- Icono de modalidad -->
+                                            <Frame Grid.Column="0"
+                                                   BackgroundColor="#6C63FF"
+                                                   CornerRadius="30"
+                                                   Padding="0"
+                                                   WidthRequest="60"
+                                                   HeightRequest="60"
+                                                   HasShadow="False"
+                                                   VerticalOptions="Center">
+                                                <Label Text="🎯"
+                                                       FontSize="28"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"/>
+                                            </Frame>
+
+                                            <!-- Información de la serie -->
+                                            <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                                <Label Text="{Binding Modalidad}" 
+                                                       FontAttributes="Bold" 
+                                                       FontSize="18"
+                                                       TextColor="#FFFFFF"/>
+
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="⚔️" FontSize="14"/>
+                                                    <Label FontSize="14" TextColor="#B8B8B8">
+                                                        <Label.FormattedText>
+                                                            <FormattedString>
+                                                                <Span Text="{Binding Jugador1.Alias}" TextColor="#6C63FF" FontAttributes="Bold"/>
+                                                                <Span Text=" vs " TextColor="#FF6B6B" FontAttributes="Bold"/>
+                                                                <Span Text="{Binding Jugador2.Alias}" TextColor="#6C63FF" FontAttributes="Bold"/>
+                                                            </FormattedString>
+                                                        </Label.FormattedText>
+                                                    </Label>
+                                                </HorizontalStackLayout>
+
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Label Text="📅" FontSize="12"/>
+                                                    <Label Text="{Binding Fecha, StringFormat='{0:dd/MM/yyyy HH:mm}'}" 
+                                                           FontSize="13"
+                                                           TextColor="#808080"/>
+                                                </HorizontalStackLayout>
+                                            </VerticalStackLayout>
+
+                                            <!-- Indicador visual -->
+                                            <BoxView Grid.Column="2"
+                                                     BackgroundColor="#6C63FF"
+                                                     WidthRequest="4"
+                                                     CornerRadius="2"
+                                                     VerticalOptions="Fill"
+                                                     HorizontalOptions="End"/>
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- Controles de paginación -->
+                        <Frame Grid.Row="3"
+                               BackgroundColor="#252529"
+                               BorderColor="#3E3E42"
+                               CornerRadius="8"
+                               Padding="15"
+                               HasShadow="False">
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Primera página -->
+                                <Button Grid.Column="0"
+                                        x:Name="BtnPrimeraPagina"
+                                        Text="⏮️"
+                                        BackgroundColor="#3E3E42"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        WidthRequest="50"
+                                        HeightRequest="40"
+                                        FontSize="16"
+                                        Clicked="OnPrimeraPaginaClicked"/>
+
+                                <!-- Anterior -->
+                                <Button Grid.Column="1"
+                                        x:Name="BtnAnterior"
+                                        Text="◀️"
+                                        BackgroundColor="#3E3E42"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        WidthRequest="50"
+                                        HeightRequest="40"
+                                        FontSize="16"
+                                        Clicked="OnAnteriorClicked"/>
+
+                                <!-- Indicador de página -->
+                                <Frame Grid.Column="2"
+                                       BackgroundColor="#1A1A1D"
+                                       BorderColor="#6C63FF"
+                                       CornerRadius="6"
+                                       Padding="10,5"
+                                       HasShadow="False"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center">
+                                    <Label x:Name="LblPaginaActual"
+                                           Text="Página 1 de 1"
+                                           TextColor="#6C63FF"
+                                           FontAttributes="Bold"
+                                           FontSize="14"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
+                                </Frame>
+
+                                <!-- Siguiente -->
+                                <Button Grid.Column="3"
+                                        x:Name="BtnSiguiente"
+                                        Text="▶️"
+                                        BackgroundColor="#3E3E42"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        WidthRequest="50"
+                                        HeightRequest="40"
+                                        FontSize="16"
+                                        Clicked="OnSiguienteClicked"/>
+
+                                <!-- Última página -->
+                                <Button Grid.Column="4"
+                                        x:Name="BtnUltimaPagina"
+                                        Text="⏭️"
+                                        BackgroundColor="#3E3E42"
+                                        TextColor="White"
+                                        CornerRadius="6"
+                                        WidthRequest="50"
+                                        HeightRequest="40"
+                                        FontSize="16"
+                                        Clicked="OnUltimaPaginaClicked"/>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </Frame>
+            </Grid>
         </ScrollView>
 
         <!-- Botón flotante para agregar -->
-        <Button Text="＋"
-                FontSize="30"
-                BackgroundColor="#007ACC"
+        <Button Text="➕"
+                FontSize="32"
+                BackgroundColor="#6C63FF"
                 TextColor="White"
-                CornerRadius="30"
-                WidthRequest="60"
-                HeightRequest="60"
+                CornerRadius="35"
+                WidthRequest="70"
+                HeightRequest="70"
                 VerticalOptions="End"
                 HorizontalOptions="End"
-                Margin="20"
-                Clicked="OnAgregarClicked" />
+                Margin="25"
+                Clicked="OnAgregarClicked">
+            <Button.Shadow>
+                <Shadow Brush="#6C63FF" Opacity="0.6" Radius="20" Offset="0,8" />
+            </Button.Shadow>
+        </Button>
     </Grid>
 </ContentPage>
-
