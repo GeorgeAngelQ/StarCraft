@@ -1,0 +1,7 @@
+<Project>
+	<PropertyGroup>
+		<!-- Forzar AnyCPU globalmente -->
+		<Platforms>AnyCPU</Platforms>
+		<RuntimeIdentifiers></RuntimeIdentifiers>
+	</PropertyGroup>
+</Project>

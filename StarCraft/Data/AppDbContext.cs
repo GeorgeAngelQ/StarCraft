@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StarCraft.Models;
+using System.Diagnostics;
 
 namespace StarCraft.Data
 {
@@ -17,22 +18,56 @@ namespace StarCraft.Data
                 var folder = FileSystem.AppDataDirectory;
 
                 if (!Directory.Exists(folder))
+                {
                     Directory.CreateDirectory(folder);
+                }
 
-                return Path.Combine(folder, "starcraft.db");
+                var dbPath = Path.Combine(folder, "starcraft.db");
+
+                Debug.WriteLine($"[DB] Ruta de base de datos: {dbPath}");
+
+                return dbPath;
             }
         }
 
-        public AppDbContext() { }
+        public AppDbContext()
+        {
+            try
+            {
+                Database.EnsureCreated();
+                Debug.WriteLine("[DB] Base de datos inicializada correctamente");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[DB ERROR] Error al crear base de datos: {ex.Message}");
+                throw;
+            }
+        }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
+            : base(options)
+        {
+            try
+            {
+                Database.EnsureCreated();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[DB ERROR] Error al crear base de datos: {ex.Message}");
+                throw;
+            }
+        }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlite($"Filename={DbPath}");
+                var dbPath = DbPath;
+                optionsBuilder.UseSqlite($"Data Source={dbPath}");
+
+#if DEBUG
+                optionsBuilder.LogTo(message => Debug.WriteLine(message));
+#endif
             }
         }
 
@@ -41,7 +76,8 @@ namespace StarCraft.Data
             modelBuilder.Entity<Juego>()
                 .HasOne(j => j.Serie)
                 .WithMany(s => s.Juegos)
-                .HasForeignKey(j => j.IdSerie);
+                .HasForeignKey(j => j.IdSerie)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Serie>()
                 .HasOne(s => s.Jugador1)
@@ -54,6 +90,41 @@ namespace StarCraft.Data
                 .WithMany()
                 .HasForeignKey(s => s.IdJugador2)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Juego>()
+                .HasOne(j => j.Mapa)
+                .WithMany()
+                .HasForeignKey(j => j.IdMapa)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Juego>()
+                .HasOne(j => j.Ganador)
+                .WithMany()
+                .HasForeignKey(j => j.IdGanador)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Jugador>()
+                .HasIndex(j => j.Alias)
+                .IsUnique();
+
+            modelBuilder.Entity<Mapa>()
+                .HasIndex(m => m.Nombre)
+                .IsUnique();
+
+            modelBuilder.Entity<Serie>()
+                .HasIndex(s => s.Fecha);
+
+            modelBuilder.Entity<Juego>()
+                .HasIndex(j => j.FechaCreacion);
+        }
+
+        public static string GetDatabaseInfo()
+        {
+            var dbPath = DbPath;
+            var exists = File.Exists(dbPath);
+            var size = exists ? new FileInfo(dbPath).Length : 0;
+
+            return $"Ruta: {dbPath}\nExiste: {exists}\nTamaño: {size / 1024.0:F2} KB";
         }
     }
 }

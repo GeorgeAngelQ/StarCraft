@@ -1,13 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="StarCraft.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:views="clr-namespace:StarCraft.Views">
+    xmlns:local="clr-namespace:StarCraft.Views"
+    Shell.FlyoutBehavior="Flyout"
+    FlyoutBackgroundColor="#1A1A1D">
 
-    <ShellContent Title="Home" ContentTemplate="{DataTemplate views:HomePage}" />
-    <ShellContent Title="Jugadores" ContentTemplate="{DataTemplate views:JugadoresPage}" />
-    <ShellContent Title="Mapas" ContentTemplate="{DataTemplate views:MapasPage}" />
-    <ShellContent Title="Series" ContentTemplate="{DataTemplate views:SeriesPage}" />
-    <ShellContent Title="Juegos" ContentTemplate="{DataTemplate views:JuegosPage}" />
+    <!-- Estilos para el menú -->
+    <Shell.Resources>
+        <Style TargetType="ShellContent">
+            <Setter Property="Shell.BackgroundColor" Value="#0F0F0F" />
+            <Setter Property="Shell.ForegroundColor" Value="#E0E0E0" />
+            <Setter Property="Shell.TabBarBackgroundColor" Value="#1A1A1D" />
+            <Setter Property="Shell.TabBarForegroundColor" Value="#6C63FF" />
+        </Style>
+    </Shell.Resources>
+
+    <!-- Items del menú -->
+    <FlyoutItem Title="🏠 Inicio" Icon="home.png">
+        <ShellContent ContentTemplate="{DataTemplate local:HomePage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="👥 Jugadores" Icon="user.png">
+        <ShellContent ContentTemplate="{DataTemplate local:JugadoresPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="🗺️ Mapas" Icon="map.png">
+        <ShellContent ContentTemplate="{DataTemplate local:MapasPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="🎯 Series" Icon="trophy.png">
+        <ShellContent ContentTemplate="{DataTemplate local:SeriesPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="🎮 Juegos" Icon="game.png">
+        <ShellContent ContentTemplate="{DataTemplate local:JuegosPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="💾 Respaldo" Icon="save.png">
+        <ShellContent ContentTemplate="{DataTemplate local:BackupPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="🔧 Diagnóstico" Icon="settings.png">
+        <ShellContent ContentTemplate="{DataTemplate local:DiagnosticsPage}" />
+    </FlyoutItem>
 
 </Shell>

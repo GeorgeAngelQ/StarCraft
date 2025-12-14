@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="StarCraft.Views.BackupPage"
+             Title="Respaldo de Datos"
+             BackgroundColor="#0F0F0F">
+
+    <ScrollView>
+        <Grid Padding="20" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- ENCABEZADO -->
+            <Frame Grid.Row="0"
+                   BackgroundColor="#1A1A1D"
+                   BorderColor="#2D2D30"
+                   CornerRadius="12"
+                   HasShadow="True"
+                   Padding="20">
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Label Text="💾" FontSize="32" VerticalOptions="Center" />
+                    <Label Text="Respaldo y Restauración" 
+                           FontSize="24" 
+                           FontAttributes="Bold"
+                           TextColor="#6C63FF"
+                           VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Frame>
+
+            <!-- EXPORTAR DATOS -->
+            <Frame Grid.Row="1"
+                   BackgroundColor="#1A1A1D"
+                   BorderColor="#2D2D30"
+                   CornerRadius="12"
+                   HasShadow="True"
+                   Padding="20">
+                <VerticalStackLayout Spacing="15">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="📤" FontSize="20" VerticalOptions="Center"/>
+                        <Label Text="Exportar Base de Datos" 
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#6C63FF"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                    <Label Text="Crea una copia de seguridad de todos tus datos"
+                           TextColor="#B8B8B8"
+                           FontSize="13"/>
+
+                    <!-- Información actual -->
+                    <Frame BackgroundColor="#252529"
+                           BorderColor="#3E3E42"
+                           CornerRadius="8"
+                           Padding="12"
+                           HasShadow="False">
+                        <Label x:Name="LblEstadisticas"
+                               Text="Cargando estadísticas..."
+                               TextColor="#E0E0E0"
+                               FontSize="13"
+                               LineHeight="1.4"/>
+                    </Frame>
+
+                    <!-- Botones de exportación -->
+                    <Grid ColumnSpacing="15" RowSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Exportar SQLite -->
+                        <Button Grid.Column="0" Grid.Row="0"
+                                Text="📁 SQLite (.db)"
+                                BackgroundColor="#6C63FF"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnExportarSQLiteClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+
+                        <!-- Exportar JSON -->
+                        <Button Grid.Column="1" Grid.Row="0"
+                                Text="📋 JSON"
+                                BackgroundColor="#6C63FF"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnExportarJSONClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+
+                        <!-- Exportar CSV -->
+                        <Button Grid.Column="0" Grid.Row="1"
+                                Text="📊 CSV"
+                                BackgroundColor="#6C63FF"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnExportarCSVClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+
+                        <!-- Exportar XML -->
+                        <Button Grid.Column="1" Grid.Row="1"
+                                Text="📄 XML"
+                                BackgroundColor="#6C63FF"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnExportarXMLClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- IMPORTAR DATOS -->
+            <Frame Grid.Row="2"
+                   BackgroundColor="#1A1A1D"
+                   BorderColor="#2D2D30"
+                   CornerRadius="12"
+                   HasShadow="True"
+                   Padding="20">
+                <VerticalStackLayout Spacing="15">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="📥" FontSize="20" VerticalOptions="Center"/>
+                        <Label Text="Importar Base de Datos" 
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#FF6B6B"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                    <Label Text="Restaura una copia de seguridad previa"
+                           TextColor="#B8B8B8"
+                           FontSize="13"/>
+
+                    <!-- Advertencia -->
+                    <Frame BackgroundColor="#3D2828"
+                           BorderColor="#FF6B6B"
+                           CornerRadius="8"
+                           Padding="12"
+                           HasShadow="False">
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="⚠️" FontSize="16" VerticalOptions="Center"/>
+                            <Label TextColor="#FFB8B8" FontSize="12" VerticalOptions="Center">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="ADVERTENCIA: " FontAttributes="Bold"/>
+                                        <Span Text="Importar reemplazará TODOS los datos actuales"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </Frame>
+
+                    <!-- Botones de importación -->
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Importar SQLite -->
+                        <Button Grid.Column="0"
+                                Text="📁 Desde SQLite"
+                                BackgroundColor="#FF6B6B"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnImportarSQLiteClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#FF6B6B" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+
+                        <!-- Importar JSON -->
+                        <Button Grid.Column="1"
+                                Text="📋 Desde JSON"
+                                BackgroundColor="#FF6B6B"
+                                TextColor="White"
+                                FontAttributes="Bold"
+                                FontSize="14"
+                                CornerRadius="8"
+                                HeightRequest="55"
+                                Clicked="OnImportarJSONClicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#FF6B6B" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- INFORMACIÓN Y AYUDA -->
+            <Frame Grid.Row="3"
+                   BackgroundColor="#1A1A1D"
+                   BorderColor="#2D2D30"
+                   CornerRadius="12"
+                   HasShadow="True"
+                   Padding="20">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="ℹ️" FontSize="18" VerticalOptions="Center"/>
+                        <Label Text="Información" 
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#6C63FF"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                    <Label TextColor="#B8B8B8" FontSize="12" LineHeight="1.5">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="• " FontAttributes="Bold"/>
+                                <Span Text="SQLite (.db): Copia exacta de la base de datos&#10;"/>
+                                <Span Text="• " FontAttributes="Bold"/>
+                                <Span Text="JSON: Formato universal, fácil de leer&#10;"/>
+                                <Span Text="• " FontAttributes="Bold"/>
+                                <Span Text="CSV: Compatible con Excel/Calc&#10;"/>
+                                <Span Text="• " FontAttributes="Bold"/>
+                                <Span Text="XML: Formato estructurado estándar&#10;&#10;"/>
+                                <Span Text="💡 Tip: " FontAttributes="Bold" TextColor="#6C63FF"/>
+                                <Span Text="Exporta regularmente para no perder tus datos"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label x:Name="LblUltimoBackup"
+                           Text="Último respaldo: Nunca"
+                           TextColor="#808080"
+                           FontSize="11"
+                           HorizontalOptions="End"/>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+    </ScrollView>
+</ContentPage>
