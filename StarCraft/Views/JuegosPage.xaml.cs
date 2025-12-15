@@ -7,18 +7,31 @@ namespace StarCraft.Views;
 public partial class JuegosPage : ContentPage
 {
     private List<Serie> _series = new();
+    private List<Serie> _seriesFiltradas = new();
     private List<Mapa> _mapas = new();
     private List<Jugador> _jugadores = new();
     private List<Juego> _juegos = new();
-    private List<dynamic> _juegosFiltrados = new();
+    private List<JuegoDisplay> _juegosFiltrados = new();
 
     private Juego? _editingJuego = null;
     private bool _isGuardando = false;
+    private bool _isLoading = false;
 
     // Paginación
     private int paginaActual = 1;
     private int itemsPorPagina = 10;
     private int totalPaginas = 1;
+
+    // Clase para display optimizado (sin dynamic)
+    private class JuegoDisplay
+    {
+        public int IdJuego { get; set; }
+        public string SerieText { get; set; } = string.Empty;
+        public string MapaNombre { get; set; } = string.Empty;
+        public string RazaJugador1 { get; set; } = string.Empty;
+        public string RazaJugador2 { get; set; } = string.Empty;
+        public string GanadorAlias { get; set; } = string.Empty;
+    }
 
     // Clases auxiliares
     private class SeriesItem
@@ -41,47 +54,84 @@ public partial class JuegosPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await LoadReferencesAsync();
-        await LoadJuegosAsync();
-        SetFieldsEnabled(false);
+        if (!_isLoading)
+        {
+            await LoadReferencesAsync();
+            await LoadJuegosAsync();
+            SetFieldsEnabled(false);
+        }
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        // Limpiar recursos al salir de la página
+        LimpiarMemoria();
+    }
+
+    private void LimpiarMemoria()
+    {
+        _juegos?.Clear();
+        _juegosFiltrados?.Clear();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 
     private async Task LoadReferencesAsync()
     {
+        if (_isLoading) return;
+
         try
         {
-            var db = new AppDbContext();
+            _isLoading = true;
 
+            // Usar using para garantizar la liberación del DbContext
+            await using var db = new AppDbContext();
+
+            // Cargar series ordenadas por fecha descendente (más recientes primero)
             _series = await db.Series
                 .Include(s => s.Jugador1)
                 .Include(s => s.Jugador2)
                 .OrderByDescending(s => s.Fecha)
                 .ThenByDescending(s => s.IdSerie)
+                .AsNoTracking() // ✅ No trackear cambios = menos memoria
                 .ToListAsync();
 
-            _mapas = await db.Mapas.OrderBy(m => m.Nombre).ToListAsync();
-            _jugadores = await db.Jugadores.OrderBy(j => j.Alias).ToListAsync();
+            _mapas = await db.Mapas
+                .OrderBy(m => m.Nombre)
+                .AsNoTracking()
+                .ToListAsync();
 
-            await db.DisposeAsync();
+            _jugadores = await db.Jugadores
+                .OrderBy(j => j.Alias)
+                .AsNoTracking()
+                .ToListAsync();
 
-            var seriesItems = _series.Select(s => new SeriesItem
-            {
-                Serie = s,
-                Display = $"{s.Modalidad} - {s.Jugador1?.Alias} vs {s.Jugador2?.Alias} ({s.Fecha:dd/MM/yyyy})"
-            }).ToList();
+            // Obtener modalidades únicas
+            var modalidades = _series
+                .Select(s => s.Modalidad)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                SeriePicker.ItemsSource = seriesItems;
-                SeriePicker.ItemDisplayBinding = new Binding("Display");
+                // Configurar picker de modalidades
+                ModalidadPicker.ItemsSource = modalidades;
+                ModalidadPicker.SelectedIndex = -1;
 
+                // Configurar picker de mapas
                 var mapaItems = _mapas.Select(m => new GenericItem<Mapa> { Item = m, Display = m.Nombre }).ToList();
                 MapaPicker.ItemsSource = mapaItems;
                 MapaPicker.ItemDisplayBinding = new Binding("Display");
 
+                // Configurar pickers de razas
                 var races = new List<string?> { null, "Terran", "Zerg", "Protoss" };
                 Raza1Picker.ItemsSource = races;
                 Raza2Picker.ItemsSource = races;
+
+                // Inicialmente, no hay series para mostrar
+                SeriePicker.ItemsSource = null;
             });
         }
         catch (Exception ex)
@@ -89,41 +139,124 @@ public partial class JuegosPage : ContentPage
             await DisplayAlert("❌ Error",
                 $"No se pudieron cargar las referencias: {ex.Message}", "OK");
         }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ModalidadPicker_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ModalidadPicker.SelectedIndex == -1)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                SeriePicker.ItemsSource = null;
+                SeriePicker.SelectedIndex = -1;
+                SetFieldsEnabled(false);
+            });
+            _seriesFiltradas = new List<Serie>();
+            _juegos = new List<Juego>();
+            _juegosFiltrados = new List<JuegoDisplay>();
+            ActualizarPaginacion();
+            return;
+        }
+
+        var modalidadSeleccionada = ModalidadPicker.SelectedItem as string;
+
+        // Filtrar series por modalidad (ya están ordenadas por fecha descendente)
+        _seriesFiltradas = _series
+            .Where(s => s.Modalidad == modalidadSeleccionada)
+            .ToList();
+
+        var seriesItems = _seriesFiltradas.Select(s => new SeriesItem
+        {
+            Serie = s,
+            Display = $"{s.Jugador1?.Alias} vs {s.Jugador2?.Alias} ({s.Fecha:dd/MM/yyyy})"
+        }).ToList();
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            SeriePicker.ItemsSource = seriesItems;
+            SeriePicker.ItemDisplayBinding = new Binding("Display");
+            SeriePicker.SelectedIndex = -1;
+            GanadorPicker.ItemsSource = null;
+            GanadorPicker.SelectedIndex = -1;
+            MapaPicker.SelectedIndex = -1;
+            Raza1Picker.SelectedIndex = -1;
+            Raza2Picker.SelectedIndex = -1;
+            SetFieldsEnabled(false);
+        });
+
+        // Limpiar lista de juegos
+        _juegos?.Clear();
+        _juegosFiltrados?.Clear();
+        ActualizarPaginacion();
     }
 
     private async Task LoadJuegosAsync()
     {
+        if (_isLoading) return;
+
         try
         {
+            _isLoading = true;
+
             if (SeriePicker.SelectedItem is not SeriesItem selectedItem)
             {
                 _juegos = new List<Juego>();
-                _juegosFiltrados = new List<dynamic>();
+                _juegosFiltrados = new List<JuegoDisplay>();
                 ActualizarPaginacion();
                 return;
             }
 
-            var db = new AppDbContext();
-            _juegos = await db.Juegos
-                .Include(j => j.Serie).ThenInclude(s => s.Jugador1)
-                .Include(j => j.Serie).ThenInclude(s => s.Jugador2)
-                .Include(j => j.Mapa)
-                .Include(j => j.Ganador)
+            await using var db = new AppDbContext();
+
+            // Cargar solo los datos necesarios
+            var juegosData = await db.Juegos
                 .Where(j => j.IdSerie == selectedItem.Serie.IdSerie)
                 .OrderByDescending(j => j.FechaCreacion)
+                .AsNoTracking()
+                .Select(j => new
+                {
+                    j.IdJuego,
+                    j.IdSerie,
+                    j.IdMapa,
+                    j.IdGanador,
+                    j.RazaJugador1,
+                    j.RazaJugador2,
+                    j.FechaCreacion,
+                    SerieModalidad = j.Serie!.Modalidad,
+                    SerieJugador1Alias = j.Serie.Jugador1!.Alias,
+                    SerieJugador2Alias = j.Serie.Jugador2!.Alias,
+                    SerieFecha = j.Serie.Fecha,
+                    MapaNombre = j.Mapa!.Nombre,
+                    GanadorAlias = j.Ganador!.Alias
+                })
                 .ToListAsync();
 
-            await db.DisposeAsync();
-
-            _juegosFiltrados = _juegos.Select(j => new
+            // Convertir a objetos Juego para edición
+            _juegos = juegosData.Select(j => new Juego
             {
-                j.IdJuego,
-                SerieText = $"{j.Serie?.Modalidad} - {j.Serie?.Jugador1?.Alias} vs {j.Serie?.Jugador2?.Alias} ({j.Serie?.Fecha:dd/MM/yyyy})",
-                MapaNombre = j.Mapa?.Nombre ?? "Sin mapa",
+                IdJuego = j.IdJuego,
+                IdSerie = j.IdSerie,
+                IdMapa = j.IdMapa,
+                IdGanador = j.IdGanador,
+                RazaJugador1 = j.RazaJugador1,
+                RazaJugador2 = j.RazaJugador2,
+                FechaCreacion = j.FechaCreacion
+            }).ToList();
+
+            // Crear objetos de display (NO dynamic)
+            _juegosFiltrados = juegosData.Select(j => new JuegoDisplay
+            {
+                IdJuego = j.IdJuego,
+                SerieText = $"{j.SerieModalidad} - {j.SerieJugador1Alias} vs {j.SerieJugador2Alias} ({j.SerieFecha:dd/MM/yyyy})",
+                MapaNombre = j.MapaNombre ?? "Sin mapa",
                 RazaJugador1 = j.RazaJugador1 ?? "N/A",
                 RazaJugador2 = j.RazaJugador2 ?? "N/A",
-                GanadorAlias = j.Ganador?.Alias ?? "N/A"
-            }).ToList<dynamic>();
+                GanadorAlias = j.GanadorAlias ?? "N/A"
+            }).ToList();
 
             paginaActual = 1;
             ActualizarPaginacion();
@@ -132,6 +265,10 @@ public partial class JuegosPage : ContentPage
         {
             await DisplayAlert("❌ Error",
                 $"No se pudieron cargar los juegos: {ex.Message}", "OK");
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
@@ -149,6 +286,7 @@ public partial class JuegosPage : ContentPage
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            JuegosCollection.ItemsSource = null; // ✅ Limpiar primero
             JuegosCollection.ItemsSource = itemsPagina;
             ActualizarControlesPaginacion();
         });
@@ -215,7 +353,7 @@ public partial class JuegosPage : ContentPage
 
     private async void GuardarButton_Clicked(object sender, EventArgs e)
     {
-        if (_isGuardando) return;
+        if (_isGuardando || _isLoading) return;
 
         try
         {
@@ -224,6 +362,11 @@ public partial class JuegosPage : ContentPage
             BtnGuardar.Text = "💾 Guardando...";
 
             // Validaciones
+            if (ModalidadPicker.SelectedIndex == -1)
+            {
+                await DisplayAlert("⚠️ Campo Requerido", "Selecciona una modalidad primero.", "OK");
+                return;
+            }
             if (SeriePicker.SelectedIndex == -1)
             {
                 await DisplayAlert("⚠️ Campo Requerido", "Selecciona una serie.", "OK");
@@ -255,7 +398,7 @@ public partial class JuegosPage : ContentPage
             raza1 = string.IsNullOrWhiteSpace(raza1) ? null : raza1;
             raza2 = string.IsNullOrWhiteSpace(raza2) ? null : raza2;
 
-            var db = new AppDbContext();
+            await using var db = new AppDbContext();
 
             if (_editingJuego == null)
             {
@@ -292,8 +435,6 @@ public partial class JuegosPage : ContentPage
                 _editingJuego = null;
             }
 
-            await db.DisposeAsync();
-
             await LoadJuegosAsync();
             NuevoButton_Clicked(null, EventArgs.Empty);
         }
@@ -319,6 +460,8 @@ public partial class JuegosPage : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            ModalidadPicker.SelectedIndex = -1;
+            SeriePicker.ItemsSource = null;
             SeriePicker.SelectedIndex = -1;
             MapaPicker.SelectedIndex = -1;
             GanadorPicker.ItemsSource = null;
@@ -332,21 +475,24 @@ public partial class JuegosPage : ContentPage
 
     private async void EditarButton_Clicked(object sender, EventArgs e)
     {
+        if (_isLoading) return;
+
         try
         {
             if (!(sender is Button btn) || !(btn.CommandParameter is int id)) return;
 
-            var db = new AppDbContext();
+            await using var db = new AppDbContext();
+
             var juego = await db.Juegos
-                .Include(j => j.Serie).ThenInclude(s => s.Jugador1)
-                .Include(j => j.Serie).ThenInclude(s => s.Jugador2)
+                .Include(j => j.Serie).ThenInclude(s => s!.Jugador1)
+                .Include(j => j.Serie).ThenInclude(s => s!.Jugador2)
                 .Include(j => j.Mapa)
                 .Include(j => j.Ganador)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(j => j.IdJuego == id);
 
             if (juego == null)
             {
-                await db.DisposeAsync();
                 await DisplayAlert("❌ Error", "No se encontró el juego especificado.", "OK");
                 return;
             }
@@ -355,6 +501,14 @@ public partial class JuegosPage : ContentPage
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                // Seleccionar modalidad primero
+                var modalidadIndex = ((List<string>)ModalidadPicker.ItemsSource!).IndexOf(juego.Serie!.Modalidad!);
+                if (modalidadIndex >= 0)
+                {
+                    ModalidadPicker.SelectedIndex = modalidadIndex;
+                }
+
+                // Después de que se filtre la serie, seleccionar la serie
                 var seriesItems = (List<SeriesItem>)SeriePicker.ItemsSource!;
                 var indexSerie = seriesItems.FindIndex(si => si.Serie.IdSerie == juego.IdSerie);
                 if (indexSerie >= 0) SeriePicker.SelectedIndex = indexSerie;
@@ -372,8 +526,6 @@ public partial class JuegosPage : ContentPage
                 Raza1Picker.SelectedItem = juego.RazaJugador1;
                 Raza2Picker.SelectedItem = juego.RazaJugador2;
             });
-
-            await db.DisposeAsync();
         }
         catch (Exception ex)
         {
@@ -384,6 +536,8 @@ public partial class JuegosPage : ContentPage
 
     private async void EliminarButton_Clicked(object sender, EventArgs e)
     {
+        if (_isLoading) return;
+
         try
         {
             if (!(sender is Button btn) || !(btn.CommandParameter is int id)) return;
@@ -398,19 +552,17 @@ public partial class JuegosPage : ContentPage
             btn.IsEnabled = false;
             btn.Text = "🗑️";
 
-            var db = new AppDbContext();
+            await using var db = new AppDbContext();
             var juego = await db.Juegos.FindAsync(id);
 
             if (juego == null)
             {
-                await db.DisposeAsync();
                 await DisplayAlert("❌ Error", "No se encontró el juego especificado.", "OK");
                 return;
             }
 
             db.Juegos.Remove(juego);
             await db.SaveChangesAsync();
-            await db.DisposeAsync();
 
             await DisplayAlert("✅ Eliminado", "Juego eliminado correctamente.", "OK");
             await LoadJuegosAsync();
@@ -430,15 +582,15 @@ public partial class JuegosPage : ContentPage
 
             if (string.IsNullOrWhiteSpace(q))
             {
-                _juegosFiltrados = _juegos.Select(j => new
+                _juegosFiltrados = _juegos.Select(j => new JuegoDisplay
                 {
-                    j.IdJuego,
+                    IdJuego = j.IdJuego,
                     SerieText = $"{j.Serie?.Modalidad} - {j.Serie?.Jugador1?.Alias} vs {j.Serie?.Jugador2?.Alias} ({j.Serie?.Fecha:dd/MM/yyyy})",
                     MapaNombre = j.Mapa?.Nombre ?? "Sin mapa",
                     RazaJugador1 = j.RazaJugador1 ?? "N/A",
                     RazaJugador2 = j.RazaJugador2 ?? "N/A",
                     GanadorAlias = j.Ganador?.Alias ?? "N/A"
-                }).ToList<dynamic>();
+                }).ToList();
             }
             else
             {
@@ -450,15 +602,15 @@ public partial class JuegosPage : ContentPage
                     (j.Ganador?.Alias?.ToLower().Contains(q) ?? false) ||
                     (j.Serie?.Jugador1?.Alias?.ToLower().Contains(q) ?? false) ||
                     (j.Serie?.Jugador2?.Alias?.ToLower().Contains(q) ?? false)
-                ).Select(j => new
+                ).Select(j => new JuegoDisplay
                 {
-                    j.IdJuego,
+                    IdJuego = j.IdJuego,
                     SerieText = $"{j.Serie?.Modalidad} - {j.Serie?.Jugador1?.Alias} vs {j.Serie?.Jugador2?.Alias} ({j.Serie?.Fecha:dd/MM/yyyy})",
                     MapaNombre = j.Mapa?.Nombre ?? "Sin mapa",
                     RazaJugador1 = j.RazaJugador1 ?? "N/A",
                     RazaJugador2 = j.RazaJugador2 ?? "N/A",
                     GanadorAlias = j.Ganador?.Alias ?? "N/A"
-                }).ToList<dynamic>();
+                }).ToList();
             }
 
             paginaActual = 1;

@@ -183,9 +183,13 @@
                             </Frame>
                         </VerticalStackLayout>
                     </Grid>
-
-                    <!-- BOTÓN BUSCAR -->
-                    <Button Grid.Row="3"
+                    <Grid Grid.Row="3" ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <!-- BOTÓN BUSCAR -->
+                        <Button Grid.Row="3"
                             Text="🔍 BUSCAR ENFRENTAMIENTOS"
                             BackgroundColor="#6C63FF"
                             TextColor="White"
@@ -194,10 +198,25 @@
                             CornerRadius="8"
                             HeightRequest="50"
                             Clicked="OnBuscarClicked">
-                        <Button.Shadow>
-                            <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
-                        </Button.Shadow>
-                    </Button>
+                            <Button.Shadow>
+                                <Shadow Brush="#6C63FF" Opacity="0.5" Radius="15" Offset="0,5" />
+                            </Button.Shadow>
+                        </Button>
+
+                        <Button Grid.Column="1"
+                        Text="🔄 Limpiar"
+                        BackgroundColor="#3E3E42"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="15"
+                        CornerRadius="8"
+                        HeightRequest="50"
+                        Clicked="LimpiarButton_Clicked">
+                            <Button.Shadow>
+                                <Shadow Brush="#3E3E42" Opacity="0.4" Radius="12" Offset="0,4" />
+                            </Button.Shadow>
+                        </Button>
+                    </Grid>
                 </Grid>
             </Frame>
 

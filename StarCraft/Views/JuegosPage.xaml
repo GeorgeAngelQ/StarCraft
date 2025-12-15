@@ -36,18 +36,36 @@
                    BackgroundColor="#1A1A1D"
                    BorderColor="#2D2D30"
                    CornerRadius="12"
-                   HasShadow="True"
+                   HasShadow="False"
                    Padding="20">
                 <VerticalStackLayout Spacing="20">
 
-                    <!-- Serie (obligatoria) -->
+                    <!-- Modalidad (NUEVO - obligatoria) -->
                     <VerticalStackLayout Spacing="8">
-                        <Label Text="🎯 Serie *" 
+                        <Label Text="🎯 Modalidad *" 
                                FontAttributes="Bold"
                                TextColor="#E0E0E0"
                                FontSize="15" />
                         <Frame BackgroundColor="#252529"
                                BorderColor="#6C63FF"
+                               CornerRadius="8"
+                               Padding="0"
+                               HasShadow="False">
+                            <Picker x:Name="ModalidadPicker"
+                                    TextColor="#FFFFFF"
+                                    TitleColor="#808080"
+                                    BackgroundColor="Transparent"
+                                    SelectedIndexChanged="ModalidadPicker_SelectedIndexChanged" />
+                        </Frame>
+                    </VerticalStackLayout>
+
+                    <!-- Serie (obligatoria) -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="📋 Serie *" 
+                               FontAttributes="Bold"
+                               TextColor="#E0E0E0"
+                               FontSize="15" />
+                        <Frame BackgroundColor="#252529"
                                CornerRadius="8"
                                Padding="0"
                                HasShadow="False">
@@ -98,7 +116,7 @@
                                        CornerRadius="8"
                                        Padding="0"
                                        HasShadow="False">
-                                    <Picker x:Name="Raza1Picker" 
+                                    <Picker x:Name="Raza1Picker"
                                             TextColor="#FFFFFF"
                                             TitleColor="#808080"
                                             BackgroundColor="Transparent"
@@ -120,7 +138,7 @@
                                        CornerRadius="8"
                                        Padding="0"
                                        HasShadow="False">
-                                    <Picker x:Name="GanadorPicker" 
+                                    <Picker x:Name="GanadorPicker"
                                             TextColor="#FFFFFF"
                                             TitleColor="#808080"
                                             BackgroundColor="Transparent"
@@ -185,14 +203,6 @@
                             </Button.Shadow>
                         </Button>
                     </Grid>
-
-                    <!-- Nota informativa -->
-                    <Frame BackgroundColor="#252529"
-                           BorderColor="#3E3E42"
-                           CornerRadius="8"
-                           Padding="12"
-                           HasShadow="False">
-                    </Frame>
                 </VerticalStackLayout>
             </Frame>
 

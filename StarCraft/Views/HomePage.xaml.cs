@@ -2,6 +2,7 @@
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Maui.Platform;
 using SkiaSharp;
 using StarCraft.Data;
 using StarCraft.Models;
@@ -23,6 +24,7 @@ public partial class HomePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        DateDesde.Date = new DateTime(2025, 10, 26);
         await Task.Delay(100);
         await CargarCombos();
     }
@@ -84,17 +86,15 @@ public partial class HomePage : ContentPage
 
             // Validaciones
             if (PickerJugador1.SelectedItem == null ||
-                PickerJugador2.SelectedItem == null ||
-                PickerMapa.SelectedItem == null)
+                PickerJugador2.SelectedItem == null)
             {
                 await DisplayAlert("⚠️ Datos Incompletos",
-                    "Por favor, selecciona ambos jugadores y un mapa.", "OK");
+                    "Por favor, selecciona ambos jugadores", "OK");
                 return;
             }
 
             var jugador1 = (Jugador)PickerJugador1.SelectedItem;
             var jugador2 = (Jugador)PickerJugador2.SelectedItem;
-            var mapa = (Mapa)PickerMapa.SelectedItem;
 
             if (jugador1.IdJugador == jugador2.IdJugador)
             {
@@ -104,7 +104,7 @@ public partial class HomePage : ContentPage
             }
 
             // Realizar búsqueda
-            await RealizarBusqueda(jugador1, jugador2, mapa);
+            await RealizarBusqueda(jugador1, jugador2);
         }
         catch (Exception ex)
         {
@@ -122,9 +122,11 @@ public partial class HomePage : ContentPage
         }
     }
 
-    private async Task RealizarBusqueda(Jugador jugador1, Jugador jugador2, Mapa mapa)
+    private async Task RealizarBusqueda(Jugador jugador1, Jugador jugador2)
     {
         string modalidad = EntryModalidad.Text?.Trim() ?? "";
+        int? idMapa = (PickerMapa.SelectedItem as Mapa)?.IdMapa;
+
         DateTime? fDesde = DateDesde.Date;
         DateTime? fHasta = DateHasta.Date;
 
@@ -138,14 +140,14 @@ public partial class HomePage : ContentPage
             .Include(j => j.Ganador)
             .Where(j =>
                 ((j.Serie.IdJugador1 == jugador1.IdJugador && j.Serie.IdJugador2 == jugador2.IdJugador) ||
-                 (j.Serie.IdJugador1 == jugador2.IdJugador && j.Serie.IdJugador2 == jugador1.IdJugador)) &&
-                j.IdMapa == mapa.IdMapa);
-
+                 (j.Serie.IdJugador1 == jugador2.IdJugador && j.Serie.IdJugador2 == jugador1.IdJugador)) && 
+                 j.FechaCreacion.Date >= fDesde);
+        
         if (!string.IsNullOrEmpty(modalidad))
             query = query.Where(j => EF.Functions.Like(j.Serie.Modalidad, $"%{modalidad}%"));
 
-        if (fDesde != null)
-            query = query.Where(j => j.FechaCreacion.Date >= fDesde.Value);
+        if (idMapa.HasValue)
+            query = query.Where(j => j.IdMapa == idMapa.Value);
 
         if (fHasta != null)
             query = query.Where(j => j.FechaCreacion.Date <= fHasta.Value);
@@ -257,7 +259,18 @@ public partial class HomePage : ContentPage
 
         ListaResultados.ItemsSource = resultados;
     }
-
+    private void LimpiarButton_Clicked(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            PickerJugador1.SelectedIndex = -1;
+            PickerJugador2.SelectedIndex = -1;
+            EntryModalidad.Text = string.Empty;
+            PickerMapa.SelectedIndex = -1;
+            DateHasta.Date = DateTime.Now;
+            LimpiarResultados();
+        });
+    }
     private void LimpiarResultados()
     {
         LblResumen.Text = string.Empty;
